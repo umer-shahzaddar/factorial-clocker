@@ -14,7 +14,7 @@ Ensure the following prerequisites are met:
 
         npm install
 
-3. Provide factorial credentials in **account-data.json**
+3. Rename **"account-data.json.template"** to **"account-data.json"** and provide your factorial credentials in the file
     
 
 ## Running
