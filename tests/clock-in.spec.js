@@ -14,7 +14,7 @@ const daysWith8Missing = '//span[@title="-8 ore"]';
 const daysWith4Missing = '//span[@title="-4 ore"]';
 const addButton = `((${daysWith8Missing})[1]//ancestor::tr//following-sibling::tr//button//*[text()="Aggiungi"])[1]`;
 const hInput = '(//input)[1]';
-const dInput = '(//input)[2]';
+const mInput = '(//input)[2]';
 const saveButton = '//button//*[text()="Invia"]';
 const savedLabel = '//*[text()="Salvato con successo"]';
 
@@ -57,9 +57,9 @@ async function fill8HourDays(page) {
     await page.click(addButton);
     await page.locator(hInput).press('Digit9');
     await page.locator(hInput).press('Digit0');
-    await page.locator(dInput).press('Digit1');
-    await page.locator(dInput).press('Digit7');
-    await page.locator(dInput).press('Digit0');
+    await page.locator(mInput).press('Digit1');
+    await page.locator(mInput).press('Digit7');
+    await page.locator(mInput).press('Digit0');
     await page.click(saveButton)
     await page.locator(savedLabel).waitFor({ state: 'visible' });
   } else {
