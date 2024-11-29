@@ -1,6 +1,21 @@
 import { test } from '@playwright/test';
-const account = JSON.parse(JSON.stringify(require('../account-data.json')));
+const fs = require('fs');
+const path = require('path');
+let account;
 
+try {
+  // Attempt to read the account-data.json file
+  const accountDataPath = path.resolve(__dirname, '../account-data.json');
+  const fileContent = fs.readFileSync(accountDataPath, 'utf-8');
+  account = JSON.parse(fileContent);
+} catch (error) {
+  // Fallback to environment variables if the file is not found or invalid
+  console.warn('account-data.json not found or invalid. Using environment variables.');
+  account = {
+    username: process.env.FACTORIAL_USERNAME || 'default_username',
+    password: process.env.FACTORIAL_PASSWORD || 'default_password',
+  };
+}
 const url = 'https://factorialhr.com/';
 const acceptCookiesButton = '//button[@class="fcm-button fcm-primary"]';
 const loginButton = '//a[@id="login-link"]';
@@ -34,8 +49,8 @@ runs.forEach(({ run }) => {
 });
 
 async function login(page) {
-  const username = process.env.FACTORIAL_USERNAME || account.username;
-  const password = process.env.FACTORIAL_PASSWORD || account.password;
+  const username = account.username;
+  const password = account.password;
 
   await page.goto(url);
   await page.locator(loginButton).hover();

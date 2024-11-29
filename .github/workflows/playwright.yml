@@ -1,18 +1,22 @@
-name: Factorial Clocker
+name: Playwright Login Tests
 on:
   workflow_dispatch:
     inputs:
-      accountData:
-        description: 'Account data JSON string'
-        required: true
+      username:
+        description: 'Username for login'
+        required: false
+        default: ''
+      password:
+        description: 'Password for login'
+        required: false
+        default: ''
+
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Setup account-data.json
-      run: echo '${{ github.event.inputs.accountData }}' > account-data.json
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
@@ -21,4 +25,7 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
+      env:
+        PLAYWRIGHT_USERNAME: ${{ github.event.inputs.username || '' }}
+        PLAYWRIGHT_PASSWORD: ${{ github.event.inputs.password || '' }}
       run: npx playwright test
