@@ -34,18 +34,25 @@ runs.forEach(({ run }) => {
 });
 
 async function login(page) {
+  const username = process.env.FACTORIAL_USERNAME || account.username;
+  const password = process.env.FACTORIAL_PASSWORD || account.password;
+
   await page.goto(url);
   await page.locator(loginButton).hover();
   await page.click(acceptCookiesButton);
   await page.click(loginButton);
-  await page.fill(emailInput, account.username);
-  await page.fill(passwordInput, account.password);
+  await page.fill(emailInput, username);
+  await page.fill(passwordInput, password);
   await page.click(submitButton);
 }
 
 async function openClockInPage(page) {
   await page.click(clockInButton);
-  await page.click(closeModalButton);
+  await page.locator(closeModalButton).last().waitFor({ state: 'visible' });
+  const closeModalButtons = await page.locator(closeModalButton).all();
+  for (let i = closeModalButtons.length; i > 0; i--) {
+    await closeModalButtons[i-1].click();
+  }
   await page.locator(row).waitFor({ state: 'visible' });
 }
 
