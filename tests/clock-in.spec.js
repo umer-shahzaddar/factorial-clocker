@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-const account = JSON.parse(JSON.stringify(require('../account-data.json')));
+require('dotenv').config({ path: './.env.local' });
 
 const url = 'https://factorialhr.com/';
 const acceptCookiesButton = '//button[@class="fcm-button fcm-primary"]';
@@ -34,8 +34,8 @@ runs.forEach(({ run }) => {
 });
 
 async function login(page) {
-  const username = account.username;
-  const password = account.password;
+  const username = process.env.USERNAME;
+  const password = process.env.PASSWORD;
 
   await page.goto(url);
   await page.locator(loginButton).hover();
@@ -51,7 +51,7 @@ async function openClockInPage(page) {
   await page.locator(closeModalButton).last().waitFor({ state: 'visible' });
   const closeModalButtons = await page.locator(closeModalButton).all();
   for (let i = closeModalButtons.length; i > 0; i--) {
-    await closeModalButtons[i-1].click();
+    await closeModalButtons[i - 1].click();
   }
   await page.locator(row).waitFor({ state: 'visible' });
 }
