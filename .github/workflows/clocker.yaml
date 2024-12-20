@@ -2,7 +2,8 @@ name: Clocker
 
 on:
   schedule:
-     - cron: '0 6 * * 2'
+     - cron: '0 6 * * 6'
+     - cron: '0 6 L * *'
   workflow_dispatch:
     parameters:
         required: false
