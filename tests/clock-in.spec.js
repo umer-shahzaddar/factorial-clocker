@@ -12,6 +12,7 @@ const closeModalButton = '//div[@aria-label="Close"]';
 const row = '(//tr)[10]';
 const daysWith8Missing = '//span[@title="-8 ore"]';
 const daysWith4Missing = '//span[@title="-4 ore"]';
+const expandButton = `((${daysWith8Missing})[1]//ancestor::tr//button)[2]`;
 const addButton = `((${daysWith8Missing})[1]//ancestor::tr//following-sibling::tr//button//*[text()="Aggiungi"])[1]`;
 const hInput = '(//input)[1]';
 const mInput = '(//input)[2]';
@@ -61,6 +62,8 @@ async function fill8HourDays(page) {
   utils.MISSING_DAYS = missingDays.length;
   console.log('Giorni da timbrare: ' + utils.MISSING_DAYS);
   if (utils.MISSING_DAYS > 0) {
+    const isVisible = await page.locator(addButton).isVisible();
+    if (!isVisible) await page.click(expandButton);
     await page.click(addButton);
     await page.locator(hInput).press('Digit9');
     await page.locator(hInput).press('Digit0');
