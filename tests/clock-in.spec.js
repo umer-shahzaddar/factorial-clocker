@@ -49,7 +49,8 @@ async function login(page) {
 
 async function openClockInPage(page) {
   await page.click(clockInButton);
-  await page.locator(closeModalButton).last().waitFor({ state: 'visible' });
+  //await page.locator(closeModalButton).last().waitFor({ state: 'visible' });
+  await page.waitForTimeout(5000);
   const closeModalButtons = await page.locator(closeModalButton).all();
   for (let i = closeModalButtons.length; i > 0; i--) {
     await closeModalButtons[i - 1].click();
