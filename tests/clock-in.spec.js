@@ -26,7 +26,15 @@ class utils {
 const runs = Array.from({ length: utils.MISSING_DAYS }, (_, index) => ({ run: index + 1 }));
 
 runs.forEach(({ run }) => {
-  test(`clock-in 9 to 17 ${run}`, async ({ page }) => {
+  test(`clock-in 9 to 17 ${run}`, async ({ context, page }) => {
+    
+    await context.addCookies([{
+      "name": "fmc-consent",
+      "value": '{"ad_storage":"granted","ad_user_data":"granted","ad_personalization":"granted","analytics_storage":"granted","functionality_storage":"granted"}',
+      "domain": "factorialhr.com",
+      "path": "/"
+    }]);
+    
     if (utils.MISSING_DAYS === 0) test.skip();
     await login(page);
     await openClockInPage(page);
@@ -40,7 +48,7 @@ async function login(page) {
 
   await page.goto(url);
   await page.locator(loginButton).hover();
-  await page.click(acceptCookiesButton);
+  //await page.click(acceptCookiesButton);
   await page.click(loginButton);
   await page.fill(emailInput, username);
   await page.fill(passwordInput, password);
