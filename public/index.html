@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factorial Clocker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+        }
+        h1 {
+            color: #c00;
+        }
+        p {
+            color: #800;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        label {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 8px;
+            color: #500;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #c00;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background-color: #900;
+        }
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .in-progress {
+            color: orange;
+        }
+        .cancel {
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Factorial Clocker</h1>
+        <p>Clock-in all your missing days!</p>
+        <form id="test-form">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Clock In</button>
+            <button type="button" id="cancel-button" disabled>Cancel</button>
+        </form>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        let testController = new AbortController();
+
+        document.getElementById('test-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Create a new AbortController for this request
+            testController = new AbortController();
+
+            // Enable the cancel button
+            document.getElementById('cancel-button').disabled = false;
+
+            // Set status to "IN PROGRESS"
+            document.getElementById('status').textContent = 'IN PROGRESS';
+            document.getElementById('status').className = 'in-progress';
+
+            try {
+                const response = await fetch('/run-test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                    signal: testController.signal,
+                });
+
+                const result = await response.json();
+
+                // Check the result message and update the status
+                if (result.message.includes('Error')) {
+                    document.getElementById('status').textContent = 'ERROR';
+                    document.getElementById('status').className = 'error';
+                } else {
+                    document.getElementById('status').textContent = 'SUCCESS';
+                    document.getElementById('status').className = 'success';
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    document.getElementById('status').textContent = 'CANCELLED';
+                    document.getElementById('status').className = 'cancel';
+                } else {
+                    console.error('Error:', error);
+                    document.getElementById('status').textContent = 'ERROR';
+                    document.getElementById('status').className = 'error';
+                }
+            } finally {
+                // Disable the cancel button
+                document.getElementById('cancel-button').disabled = true;
+            }
+        });
+
+        document.getElementById('cancel-button').addEventListener('click', function() {
+            testController.abort();
+        });
+    </script>
+</body>
+</html>
