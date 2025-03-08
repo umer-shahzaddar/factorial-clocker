@@ -18,7 +18,7 @@ app.post('/run-test', (req, res) => {
     process.env.PASSWORD = password;
 
     // Run Playwright test using spawn
-    playwrightProcess = spawn('npx', ['playwright', 'test']);
+    playwrightProcess = spawn('npx', ['playwright', 'test', '--headed']);
 
     let stdoutData = '';
     let stderrData = '';
@@ -56,6 +56,17 @@ app.post('/run-test', (req, res) => {
             console.log('Test cancelled due to request abortion');
         }
     });
+});
+
+app.post('/cancel-test', (req, res) => {
+    if (playwrightProcess) {
+        playwrightProcess.kill('SIGTERM');  // Terminate the process
+        playwrightProcess = null;
+        console.log('Playwright process terminated due to cancel request');
+        res.status(200).json({ message: 'Test process cancelled' });
+    } else {
+        res.status(400).json({ message: 'No test process to cancel' });
+    }
 });
 
 

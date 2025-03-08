@@ -18,24 +18,26 @@ const hInput = '(//input)[1]';
 const mInput = '(//input)[2]';
 const saveButton = '//button//*[text()="Invia"]';
 const savedLabel = '//*[text()="Salvato con successo"]';
+const invalidCredentialsLabel = '//*[contains(text(), "Invalid email or password")]';
 
 class utils {
   static MISSING_DAYS = 31;
+  static LOGIN_FAILED = false;
 }
 
 const runs = Array.from({ length: utils.MISSING_DAYS }, (_, index) => ({ run: index + 1 }));
 
 runs.forEach(({ run }) => {
   test(`clock-in 9 to 17 ${run}`, async ({ context, page }) => {
-    
+
     await context.addCookies([{
       "name": "fmc-consent",
       "value": '{"ad_storage":"granted","ad_user_data":"granted","ad_personalization":"granted","analytics_storage":"granted","functionality_storage":"granted"}',
       "domain": "factorialhr.com",
       "path": "/"
     }]);
-    
-    if (utils.MISSING_DAYS === 0) test.skip();
+
+    if (utils.MISSING_DAYS === 0 || utils.LOGIN_FAILED) test.skip();
     await login(page);
     await openClockInPage(page);
     await fill8HourDays(page);
@@ -53,6 +55,8 @@ async function login(page) {
   await page.fill(emailInput, username);
   await page.fill(passwordInput, password);
   await page.click(submitButton);
+  utils.LOGIN_FAILED = await page.locator(invalidCredentialsLabel).isVisible();
+  if (utils.LOGIN_FAILED) test.skip("Invalid credentials");
 }
 
 async function openClockInPage(page) {
