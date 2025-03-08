@@ -18,7 +18,7 @@ app.post('/run-test', (req, res) => {
     process.env.PASSWORD = password;
 
     // Run Playwright test using spawn
-    playwrightProcess = spawn('npx', ['playwright', 'test', '--headed']);
+    playwrightProcess = spawn('npx', ['playwright', 'test']);
 
     let stdoutData = '';
     let stderrData = '';
