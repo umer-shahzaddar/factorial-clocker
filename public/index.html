@@ -120,7 +120,7 @@
             document.getElementById('status').className = 'in-progress';
 
             try {
-                const response = await fetch('/api/run-test', {
+                const response = await fetch('/run-test', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
