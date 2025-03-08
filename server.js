@@ -11,7 +11,7 @@ let playwrightProcess = null;
 app.post('/run-test', (req, res) => {
     console.log('Request received');
     const { username, password } = req.body;
-    console.log('Username:', username, 'Password:', password);
+    console.log('Username:', username, 'Password:', '***');
 
     // Set environment variables for Playwright
     process.env.USERNAME = username;
