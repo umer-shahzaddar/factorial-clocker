@@ -1,5 +1,7 @@
 import { test } from '@playwright/test';
 require('dotenv').config({ path: './.env.local' });
+const fs = require('fs');
+const path = './status.json';
 
 const url = 'https://factorialhr.com/';
 const acceptCookiesButton = '//button[@class="fcm-button fcm-primary"]';
@@ -27,8 +29,23 @@ class utils {
 
 const runs = Array.from({ length: utils.MISSING_DAYS }, (_, index) => ({ run: index + 1 }));
 
-runs.forEach(({ run }) => {
+for (const { run } of runs) {
   test(`clock-in 9 to 17 ${run}`, async ({ context, page }) => {
+
+
+    if (fs.existsSync(path)) {
+      const status = JSON.parse(fs.readFileSync(path, 'utf-8'));
+      utils.LOGIN_FAILED = status.LOGIN_FAILED;
+      utils.MISSING_DAYS = status.MISSING_DAYS;
+    }
+
+    if (utils.MISSING_DAYS === 0) test.skip();
+
+    if (utils.LOGIN_FAILED) {
+      console.error("Invalid credentials");
+      fs.writeFileSync(path, JSON.stringify({ LOGIN_FAILED: true, MISSING_DAYS: 0 }));
+      process.exit(1);
+    }
 
     await context.addCookies([{
       "name": "fmc-consent",
@@ -37,12 +54,21 @@ runs.forEach(({ run }) => {
       "path": "/"
     }]);
 
-    if (utils.MISSING_DAYS === 0 || utils.LOGIN_FAILED) test.skip();
     await login(page);
+    if (utils.LOGIN_FAILED) return;
+
     await openClockInPage(page);
     await fill8HourDays(page);
   });
+}
+
+test.afterAll(() => {
+  // Delete the status file after all tests
+  if (fs.existsSync(path)) {
+    fs.unlinkSync(path);  // Delete the file
+  }
 });
+
 
 async function login(page) {
   const username = process.env.USERNAME;
@@ -56,7 +82,6 @@ async function login(page) {
   await page.fill(passwordInput, password);
   await page.click(submitButton);
   utils.LOGIN_FAILED = await page.locator(invalidCredentialsLabel).isVisible();
-  if (utils.LOGIN_FAILED) test.skip("Invalid credentials");
 }
 
 async function openClockInPage(page) {
