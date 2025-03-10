@@ -16,7 +16,6 @@ app.post('/run-test', (req, res) => {
     // Run GitHub Actions workflow using spawn
     const ghProcess = spawn('gh', [
         'workflow', 'run', 'clocker.yaml',
-        '--repo', 'umer279/factorial-clocker',
         '-f', `username=${username}`,
         '-f', `password=${password}`
     ]);
