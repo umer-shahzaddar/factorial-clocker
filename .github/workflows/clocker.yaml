@@ -1,8 +1,17 @@
 name: Clocker
 
 on:
-  schedule:
-     - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      username:
+        description: 'Add username'
+        required: true
+        default: 'xxx'
+
+      password:
+        description: 'Add password'
+        required: true
+        default: 'xxx'
 
 jobs:
   test:
@@ -26,8 +35,8 @@ jobs:
 
     - name: Run Playwright tests
       env:
-        USERNAME: ${{ secrets.USERNAME }}
-        PASSWORD: ${{ secrets.PASSWORD }}
+        USERNAME:  ${{ github.event.inputs.username }}
+        PASSWORD:  ${{ github.event.inputs.password }}
       run: npx playwright test
 
     - name: Upload Playwright Report
