@@ -13,50 +13,50 @@ app.post('/run-test', (req, res) => {
     const { username, password } = req.body;
     console.log('Username:', username, 'Password:', '***');
 
-    // Set environment variables for Playwright
-    process.env.USERNAME = username;
-    process.env.PASSWORD = password;
-
-    // Run Playwright test using spawn
-    playwrightProcess = spawn('npx', ['playwright', 'test']);
+    // Run GitHub Actions workflow using spawn
+    const ghProcess = spawn('gh', [
+        'workflow', 'run', 'clocker.yaml',
+        '--repo', 'umer279/factorial-clocker',
+        '-f', `username=${username}`,
+        '-f', `password=${password}`
+    ]);
 
     let stdoutData = '';
     let stderrData = '';
 
-    playwrightProcess.stdout.on('data', (data) => {
+    ghProcess.stdout.on('data', (data) => {
         stdoutData += data.toString();
         console.log(`Stdout: ${data}`);
     });
 
-    playwrightProcess.stderr.on('data', (data) => {
+    ghProcess.stderr.on('data', (data) => {
         stderrData += data.toString();
         console.error(`Stderr: ${data}`);
     });
 
-    playwrightProcess.on('close', (code) => {
-        console.log(`Playwright process exited with code ${code}`);
-        playwrightProcess = null;
+    ghProcess.on('close', (code) => {
+        console.log(`GH CLI process exited with code ${code}`);
         if (code === 0) {
-            res.json({ message: `Test completed successfully. Output: ${stdoutData}` });
+            res.json({ message: `Workflow triggered successfully. Output: ${stdoutData}` });
         } else {
-            res.json({ message: `Error: Test failed with code ${code}. Output: ${stderrData}` });
+            res.status(500).json({ message: `Error: Workflow failed with code ${code}. Output: ${stderrData}` });
         }
     });
 
-    playwrightProcess.on('error', (err) => {
-        console.error(`Failed to start Playwright process: ${err.message}`);
+    ghProcess.on('error', (err) => {
+        console.error(`Failed to start GH CLI process: ${err.message}`);
         res.status(500).json({ message: `Error: ${err.message}` });
     });
 
     // Handle request cancellation
     req.on('aborted', () => {
-        if (playwrightProcess) {
-            playwrightProcess.kill('SIGTERM');
-            playwrightProcess = null;
-            console.log('Test cancelled due to request abortion');
+        if (ghProcess) {
+            ghProcess.kill('SIGTERM');
+            console.log('Workflow request cancelled due to client abortion');
         }
     });
 });
+
 
 app.post('/cancel-test', (req, res) => {
     if (playwrightProcess) {
