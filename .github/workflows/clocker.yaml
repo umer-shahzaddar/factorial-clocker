@@ -1,17 +1,8 @@
 name: Clocker
 
 on:
-  workflow_dispatch:
-    inputs:
-      username:
-        description: 'Add username'
-        required: true
-        default: 'xxx'
-
-      password:
-        description: 'Add password'
-        required: true
-        default: 'xxx'
+  schedule:
+     - cron: '0 3 * * *'
 
 jobs:
   test:
