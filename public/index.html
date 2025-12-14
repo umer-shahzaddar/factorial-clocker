@@ -125,6 +125,9 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
+            console.log('[FRONTEND] Form submitted');
+            console.log('[FRONTEND] Username:', username);
+
             // Create a new AbortController for this request
             testController = new AbortController();
 
@@ -138,7 +141,8 @@
             document.getElementById('status').className = 'in-progress';
 
             try {
-                const response = await fetch('/run-test', {
+                console.log('[FRONTEND] Sending request to /run-test');
+                const response = await fetch('http://localhost:3000/run-test', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -147,7 +151,9 @@
                     signal: testController.signal,
                 });
 
+                console.log('[FRONTEND] Response status:', response.status);
                 const result = await response.json();
+                console.log('[FRONTEND] Response:', result);
 
                 // Check the result message and update the status
                 if (result.message.includes('Error')) {
@@ -158,6 +164,7 @@
                     document.getElementById('status').className = 'success';
                 }
             } catch (error) {
+                console.error('[FRONTEND] Fetch error:', error);
                 if (error.name === 'AbortError') {
                     document.getElementById('status').textContent = 'CANCELLED';
                     document.getElementById('status').className = 'cancel';
@@ -178,7 +185,7 @@
             testController.abort();
 
             // Send a request to the server to terminate the running process
-            await fetch('/cancel-test', {
+            await fetch('http://localhost:3000/cancel-test', {
                 method: 'POST',
             });
 

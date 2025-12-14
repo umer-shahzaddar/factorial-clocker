@@ -6,52 +6,76 @@ const port = 3000;
 app.use(express.json());
 app.use(express.static('public'));
 
+// Enable CORS for all routes
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 let playwrightProcess = null;
 
 app.post('/run-test', (req, res) => {
-    console.log('Request received');
+    console.log('[CLOCKER] Request received at', new Date().toISOString());
     const { username, password } = req.body;
-    console.log('Username:', username, 'Password:', '***');
+    console.log('[CLOCKER] Username:', username);
 
-    // Run GitHub Actions workflow using spawn
-    const ghProcess = spawn('gh', [
-        'workflow', 'run', 'clocker.yaml',
-        '-f', `username=${username}`,
-        '-f', `password=${password}`
-    ]);
+    if (!username || !password) {
+        console.error('[CLOCKER] Missing credentials');
+        return res.status(400).json({ message: 'Error: Username and password are required' });
+    }
+
+    // Create environment variables for the Playwright test
+    const env = { ...process.env, USERNAME: username, PASSWORD: password };
+
+    // Run Playwright test directly
+    console.log('[CLOCKER] Spawning Playwright with command: npx playwright test');
+    playwrightProcess = spawn('npx', ['playwright', 'test'], { env, shell: true });
 
     let stdoutData = '';
     let stderrData = '';
 
-    ghProcess.stdout.on('data', (data) => {
-        stdoutData += data.toString();
-        console.log(`Stdout: ${data}`);
+    console.log('[CLOCKER] Starting Playwright test process...');
+
+    playwrightProcess.stdout.on('data', (data) => {
+        const logEntry = data.toString();
+        stdoutData += logEntry;
+        console.log('[PLAYWRIGHT]', logEntry);
     });
 
-    ghProcess.stderr.on('data', (data) => {
-        stderrData += data.toString();
-        console.error(`Stderr: ${data}`);
+    playwrightProcess.stderr.on('data', (data) => {
+        const logEntry = data.toString();
+        stderrData += logEntry;
+        console.error('[PLAYWRIGHT ERROR]', logEntry);
     });
 
-    ghProcess.on('close', (code) => {
-        console.log(`GH CLI process exited with code ${code}`);
+    playwrightProcess.on('close', (code) => {
+        console.log(`[CLOCKER] Playwright process exited with code ${code} at ${new Date().toISOString()}`);
+        playwrightProcess = null;
         if (code === 0) {
-            res.json({ message: `Workflow triggered successfully. Output: ${stdoutData}` });
+            console.log('[CLOCKER] Test completed successfully');
+            res.json({ message: `Test completed successfully. Output: ${stdoutData}` });
         } else {
-            res.status(500).json({ message: `Error: Workflow failed with code ${code}. Output: ${stderrData}` });
+            console.log('[CLOCKER] Test failed with errors');
+            res.status(500).json({ message: `Error: Test failed with code ${code}. Output: ${stderrData}` });
         }
     });
 
-    ghProcess.on('error', (err) => {
-        console.error(`Failed to start GH CLI process: ${err.message}`);
+    playwrightProcess.on('error', (err) => {
+        console.error(`[CLOCKER] Failed to start Playwright process: ${err.message}`);
         res.status(500).json({ message: `Error: ${err.message}` });
     });
 
     // Handle request cancellation
     req.on('aborted', () => {
-        if (ghProcess) {
-            ghProcess.kill('SIGTERM');
-            console.log('Workflow request cancelled due to client abortion');
+        if (playwrightProcess) {
+            playwrightProcess.kill('SIGTERM');
+            console.log('[CLOCKER] Playwright process cancelled due to client abortion at', new Date().toISOString());
+            playwrightProcess = null;
         }
     });
 });
@@ -71,5 +95,7 @@ app.post('/cancel-test', (req, res) => {
 
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`[CLOCKER] Server started at ${new Date().toISOString()}`);
+    console.log(`[CLOCKER] Server running at http://localhost:${port}`);
+    console.log('[CLOCKER] Ready to accept requests...');
 });
