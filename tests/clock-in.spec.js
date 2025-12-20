@@ -14,7 +14,7 @@ const closeModalButton = '//div[@aria-label="Close"]';
 const row = '(//tr)[10]';
 const daysWith8Missing = '//span[@title="-8 ore"]';
 const daysWith4Missing = '//span[@title="-4 ore"]';
-const expandButton = `((${daysWith8Missing})[1]//ancestor::tr//button)[2]`;
+const expandButton = `(${daysWith8Missing})[1]//ancestor::tr//*[@data-intercom-target="attendance-row-toggle"]`;
 const addButton = `((${daysWith8Missing})[1]//ancestor::tr//following-sibling::tr//button//*[text()="Aggiungi"])[1]`;
 const hInput = '(//input)[1]';
 const mInput = '(//input)[2]';
