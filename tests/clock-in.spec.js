@@ -21,6 +21,8 @@ const mInput = '(//input)[2]';
 const saveButton = '//button//*[text()="Invia"]';
 const savedLabel = '//*[text()="Salvato con successo"]';
 const invalidCredentialsLabel = '//*[contains(text(), "Invalid email or password")]';
+const correctEntryButton = '//*[text()="Rivedi e correggi il turno"]';
+const saveEntry = '//*[text()="Salva turno"]';
 
 class utils {
   static MISSING_DAYS = 31;
@@ -109,6 +111,11 @@ async function fill8HourDays(page) {
     await page.locator(mInput).press('Digit7');
     await page.locator(mInput).press('Digit0');
     await page.click(saveButton)
+    try {
+      await page.locator(correctEntryButton).waitFor({ state: 'visible', timeout: 5000 });
+      await page.click(saveEntry)
+    } catch (error) { }
+
     await page.locator(savedLabel).waitFor({ state: 'visible' });
   } else {
     console.log('Tutti i giorni con 8 ore vuote sono stati timbrati');
